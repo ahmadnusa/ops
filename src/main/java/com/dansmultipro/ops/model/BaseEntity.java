@@ -12,27 +12,27 @@ import java.util.UUID;
 public abstract class BaseEntity {
 
     @Id
-    @Column(name = "id", nullable = false, updatable = false)
+    @Column(length = 36)
     private UUID id;
 
-    @Column(name = "is_active", nullable = false)
-    private Boolean isActive;
-
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @Version
-    @Column(name = "opt_lock", nullable = false)
-    private Long optLock;
-
-    @Column(name = "created_by", nullable = false)
+    @Column(length = 36, nullable = false)
     private UUID createdBy;
 
-    @Column(name = "updated_by")
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(length = 36)
     private UUID updatedBy;
+
+    @Column
+    private LocalDateTime updatedAt;
+
+    @Column
+    private Boolean isActive;
+
+    @Version
+    @Column(nullable = false)
+    private Integer optLock;
 
     public UUID getId() {
         return id;
@@ -40,38 +40,6 @@ public abstract class BaseEntity {
 
     public void setId(UUID id) {
         this.id = id;
-    }
-
-    public Boolean getIsActive() {
-        return isActive;
-    }
-
-    public void setIsActive(Boolean active) {
-        isActive = active;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public Long getOptLock() {
-        return optLock;
-    }
-
-    public void setOptLock(Long optLock) {
-        this.optLock = optLock;
     }
 
     public UUID getCreatedBy() {
@@ -82,11 +50,43 @@ public abstract class BaseEntity {
         this.createdBy = createdBy;
     }
 
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
     public UUID getUpdatedBy() {
         return updatedBy;
     }
 
     public void setUpdatedBy(UUID updatedBy) {
         this.updatedBy = updatedBy;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
+    }
+
+    public Integer getOptLock() {
+        return optLock;
+    }
+
+    public void setOptLock(Integer optLock) {
+        this.optLock = optLock;
     }
 }

@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.dansmultipro</groupId>
-	<artifactId>opm</artifactId>
+	<artifactId>ops</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>opm</name>
+	<name>ops</name>
 	<description>Demo project for Spring Boot</description>
 	<url/>
 	<licenses>

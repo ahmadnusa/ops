@@ -1,47 +1,52 @@
 package com.dansmultipro.ops.service;
 
+import com.dansmultipro.ops.constant.ResponseConstant;
 import com.dansmultipro.ops.model.BaseEntity;
 import com.dansmultipro.ops.util.AuthUtil;
+import com.dansmultipro.ops.util.UUIDUtil;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 import java.util.UUID;
 
-public abstract class BaseService<T extends BaseEntity> {
+import org.springframework.beans.factory.annotation.Autowired;
 
-    protected void prepareInsert(T entity) {
-        Objects.requireNonNull(entity, "Entity must not be null");
+public abstract class BaseService {
 
-        if (entity.getId() == null) {
-            entity.setId(UUID.randomUUID());
-        }
+    protected AuthUtil authUtil;
 
-        LocalDateTime now = LocalDateTime.now();
-        entity.setIsActive(Boolean.TRUE);
-        entity.setCreatedAt(now);
-        entity.setUpdatedAt(now);
-
-        UUID actorId = AuthUtil.idLoginOrSystem();
-        entity.setCreatedBy(actorId);
-        entity.setUpdatedBy(actorId);
+    @Autowired
+    public void setAuthUtil(AuthUtil authUtil) {
+        this.authUtil = authUtil;
     }
 
-    protected void prepareUpdate(T entity) {
-        Objects.requireNonNull(entity, "Entity must not be null");
+    protected <E extends BaseEntity> E prepareCreate(E entity) {
+        LocalDateTime now = LocalDateTime.now();
+        UUID actorId = AuthUtil.getLoginId();
 
+        entity.setId(UUID.randomUUID());
+        entity.setIsActive(Boolean.TRUE);
+        entity.setCreatedAt(now);
+        entity.setCreatedBy(actorId);
+
+        return entity;
+    }
+
+    protected <E extends BaseEntity> E prepareUpdate(E entity) {
         entity.setUpdatedAt(LocalDateTime.now());
-        entity.setUpdatedBy(AuthUtil.idLoginOrSystem());
+        entity.setUpdatedBy(AuthUtil.getLoginId());
+
+        return entity;
     }
 
     protected String messageBuilder(String resourceName, String action) {
-        Objects.requireNonNull(resourceName, "Resource name must not be null");
-        Objects.requireNonNull(action, "Action must not be null");
-
         return "%s has been %s successfully.".formatted(resourceName, action);
     }
 
-    protected UUID getUUID(String value) {
-        Objects.requireNonNull(value, "Value must not be null");
-        return UUID.fromString(value);
+    protected String messageBuilder(String resourceName, ResponseConstant message) {
+        return "%s %s".formatted(resourceName, message.getValue());
+    }
+
+    protected UUID getUUID(String uuidStr) {
+        return UUIDUtil.getUUID.apply(uuidStr);
     }
 }
