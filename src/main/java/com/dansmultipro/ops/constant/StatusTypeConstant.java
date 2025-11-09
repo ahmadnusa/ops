@@ -1,6 +1,6 @@
 package com.dansmultipro.ops.constant;
 
-public enum StatusType {
+public enum StatusTypeConstant {
     PROCESSING,
     APPROVED,
     REJECTED,

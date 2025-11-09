@@ -1,6 +1,6 @@
 package com.dansmultipro.ops.util;
 
-import com.dansmultipro.ops.constant.RoleType;
+import com.dansmultipro.ops.constant.RoleTypeConstant;
 import com.dansmultipro.ops.model.user.User;
 import com.dansmultipro.ops.pojo.AuthorizationPOJO;
 import com.dansmultipro.ops.repository.UserRepo;
@@ -24,7 +24,7 @@ public final class AuthUtil {
     }
 
     public UUID getSystemId() {
-        return userRepo.findFirstByRoleCode(RoleType.SYSTEM.name())
+        return userRepo.findFirstByRoleCode(RoleTypeConstant.SYSTEM.name())
                 .map(User::getId)
                 .orElseThrow(() -> new IllegalStateException("System user is not configured."));
     }
@@ -35,13 +35,13 @@ public final class AuthUtil {
         return UUID.fromString(principal.getId());
     }
 
-    public RoleType roleLogin() {
+    public RoleTypeConstant roleLogin() {
         AuthorizationPOJO principal = resolvePrincipal()
                 .orElseThrow(() -> new IllegalStateException("Authentication is required."));
         return principal.getRole();
     }
 
-    public boolean hasRole(RoleType role) {
+    public boolean hasRole(RoleTypeConstant role) {
         Optional<AuthorizationPOJO> principal = resolvePrincipal();
         if (principal.isEmpty()) {
             return false;

@@ -1,7 +1,7 @@
 package com.dansmultipro.ops.service.impl;
 
 import com.dansmultipro.ops.constant.ResponseConstant;
-import com.dansmultipro.ops.constant.RoleType;
+import com.dansmultipro.ops.constant.RoleTypeConstant;
 import com.dansmultipro.ops.dto.auth.LoginRequestDto;
 import com.dansmultipro.ops.dto.auth.LoginResponseDto;
 import com.dansmultipro.ops.dto.auth.RegisterRequestDto;
@@ -69,12 +69,12 @@ public class UserServiceImpl extends BaseService implements UserService {
         user.setPassword(passwordEncoder.encode(request.password()));
 
         boolean authenticated = authUtil.isAuthenticated();
-        RoleType targetRole = authenticated ? RoleType.GATEWAY : RoleType.CUSTOMER;
+        RoleTypeConstant targetRole = authenticated ? RoleTypeConstant.GATEWAY : RoleTypeConstant.CUSTOMER;
         if (authenticated) {
             ensureSuperAdmin();
         }
         user.setRole(fetchRoleByCode(targetRole.name()));
-        boolean activeFlag = targetRole == RoleType.GATEWAY;
+        boolean activeFlag = targetRole == RoleTypeConstant.GATEWAY;
         prepareInsert(user, activeFlag);
 
         User saved = userRepo.save(user);
@@ -129,7 +129,7 @@ public class UserServiceImpl extends BaseService implements UserService {
         User updated = userRepo.save(user);
 
         String message = messageBuilder(RESOURCE_NAME, ResponseConstant.UPDATED.getValue());
-        return new ApiPutResponseDto(String.valueOf(updated.getOptLock()), message);
+        return new ApiPutResponseDto(updated.getOptLock(), message);
     }
 
     @Override
@@ -141,7 +141,7 @@ public class UserServiceImpl extends BaseService implements UserService {
         User updated = userRepo.save(user);
 
         String message = messageBuilder(RESOURCE_NAME, ResponseConstant.UPDATED.getValue());
-        return new ApiPutResponseDto(String.valueOf(updated.getOptLock()), message);
+        return new ApiPutResponseDto(updated.getOptLock(), message);
     }
 
     @Override
@@ -180,7 +180,7 @@ public class UserServiceImpl extends BaseService implements UserService {
     }
 
     private void ensureSuperAdmin() {
-        if (!authUtil.hasRole(RoleType.SA)) {
+        if (!authUtil.hasRole(RoleTypeConstant.SA)) {
             throw new BusinessRuleException(messageBuilder("Access", ResponseConstant.SUPER_ADMIN_REQUIRED));
         }
     }

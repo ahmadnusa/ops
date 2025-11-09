@@ -35,7 +35,7 @@ public abstract class BaseService {
 
     protected <E extends BaseEntity> E prepareUpdate(E entity) {
         UUID actorId = authUtil.isAuthenticated() ? authUtil.getLoginId() : authUtil.getSystemId();
-        
+
         entity.setUpdatedAt(LocalDateTime.now());
         entity.setUpdatedBy(actorId);
 

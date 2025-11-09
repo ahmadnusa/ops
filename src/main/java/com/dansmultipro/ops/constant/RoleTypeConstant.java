@@ -1,6 +1,6 @@
 package com.dansmultipro.ops.constant;
 
-public enum RoleType {
+public enum RoleTypeConstant {
     SA("Super Admin"),
     CUSTOMER("Customer"),
     GATEWAY("Gateway"),
@@ -8,7 +8,7 @@ public enum RoleType {
 
     private final String name;
 
-    RoleType(String name) {
+    RoleTypeConstant(String name) {
         this.name = name;
     }
 

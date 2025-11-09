@@ -8,11 +8,16 @@ public enum ResponseConstant {
     NOT_FOUND("Not Found"),
     ALREADY_EXISTS("Already Exists"),
     STALE_VERSION("Stale Version"),
+    INVALID_VALUE("is invalid."),
     INVALID_CREDENTIAL("Email or password is incorrect."),
     ACCOUNT_INACTIVE("is not active yet. Please wait for admin approval."),
     AUTH_REQUIRED("is required."),
     OLD_PASSWORD_INVALID("Old password is incorrect."),
-    SUPER_ADMIN_REQUIRED("requires Super Admin privileges.");
+    SUPER_ADMIN_REQUIRED("requires Super Admin privileges."),
+    CUSTOMER_REQUIRED("requires Customer privileges."),
+    GATEWAY_REQUIRED("requires Gateway privileges."),
+    NOT_OWNER("is not owned by you."),
+    NOT_PROCESSING("must be in PROCESSING status.");
 
     private final String value;
 

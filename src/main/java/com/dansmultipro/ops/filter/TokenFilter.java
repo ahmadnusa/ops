@@ -1,6 +1,6 @@
 package com.dansmultipro.ops.filter;
 
-import com.dansmultipro.ops.constant.RoleType;
+import com.dansmultipro.ops.constant.RoleTypeConstant;
 import com.dansmultipro.ops.pojo.AuthorizationPOJO;
 import com.dansmultipro.ops.util.JwtUtil;
 import io.jsonwebtoken.Claims;
@@ -47,7 +47,7 @@ public class TokenFilter extends OncePerRequestFilter {
             String email = claims.getSubject();
             String roleValue = claims.get("role", String.class);
 
-            RoleType role = RoleType.valueOf(roleValue);
+            RoleTypeConstant role = RoleTypeConstant.valueOf(roleValue);
             AuthorizationPOJO principal = new AuthorizationPOJO(userId, email, role);
             List<SimpleGrantedAuthority> authorities =
                     Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.name()));
@@ -60,6 +60,10 @@ public class TokenFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         } catch (Exception ex) {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().write("{\"message\":\"Unauthorized\"}");
+            response.getWriter().flush();
         }
     }
 }

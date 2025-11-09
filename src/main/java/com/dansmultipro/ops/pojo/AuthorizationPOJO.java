@@ -1,14 +1,14 @@
 package com.dansmultipro.ops.pojo;
 
-import com.dansmultipro.ops.constant.RoleType;
+import com.dansmultipro.ops.constant.RoleTypeConstant;
 
 public class AuthorizationPOJO {
 
     private final String id;
     private final String email;
-    private final RoleType role;
+    private final RoleTypeConstant role;
 
-    public AuthorizationPOJO(String id, String email, RoleType role) {
+    public AuthorizationPOJO(String id, String email, RoleTypeConstant role) {
         this.id = id;
         this.email = email;
         this.role = role;
@@ -22,7 +22,7 @@ public class AuthorizationPOJO {
         return email;
     }
 
-    public RoleType getRole() {
+    public RoleTypeConstant getRole() {
         return role;
     }
 }
