@@ -16,7 +16,7 @@ import com.dansmultipro.ops.model.Payment;
 import com.dansmultipro.ops.model.master.PaymentType;
 import com.dansmultipro.ops.model.master.ProductType;
 import com.dansmultipro.ops.model.master.StatusType;
-import com.dansmultipro.ops.model.user.User;
+import com.dansmultipro.ops.model.User;
 import com.dansmultipro.ops.repository.PaymentRepo;
 import com.dansmultipro.ops.repository.PaymentTypeRepo;
 import com.dansmultipro.ops.repository.ProductTypeRepo;
@@ -86,30 +86,6 @@ public class PaymentServiceImpl extends BaseService implements PaymentService {
     }
 
     @Override
-    public ApiPutResponseDto update(String id, PaymentUpdateRequestDto request) {
-        ensureCustomerRole();
-        Payment payment = fetchPayment(id);
-        ensureOwner(payment);
-        ensureProcessing(payment);
-
-        if (!Objects.equals(payment.getOptLock(), request.optLock())) {
-            throw new BusinessRuleException(messageBuilder(RESOURCE_NAME, ResponseConstant.STALE_VERSION));
-        }
-
-        payment.setProductType(fetchProductType(request.productType()));
-        payment.setPaymentType(fetchPaymentType(request.paymentType()));
-        payment.setCustomerNumber(request.customerNumber());
-        payment.setAmount(request.amount());
-        payment.setDescription(request.description());
-
-        prepareUpdate(payment);
-        Payment updated = paymentRepo.save(payment);
-
-        String message = messageBuilder(RESOURCE_NAME, ResponseConstant.UPDATED.getValue());
-        return new ApiPutResponseDto(updated.getOptLock(), message);
-    }
-
-    @Override
     public ApiDeleteResponseDto cancel(String id) {
         ensureCustomerRole();
         Payment payment = fetchPayment(id);
@@ -163,7 +139,6 @@ public class PaymentServiceImpl extends BaseService implements PaymentService {
     @Override
     public Page<PaymentResponseDto> getAll(StatusTypeConstant status, Pageable pageable) {
         Specification<Payment> spec = Specification.allOf(
-                PaymentSpecsification.isActive(Boolean.TRUE),
                 PaymentSpecsification.byStatus(status));
 
         RoleTypeConstant role = authUtil.roleLogin();

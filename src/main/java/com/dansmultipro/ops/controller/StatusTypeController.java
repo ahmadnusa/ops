@@ -24,19 +24,14 @@ public class StatusTypeController {
     }
 
     @GetMapping
-    public List<StatusTypeResponseDto> findAll() {
-        return service.findAll();
+    public ResponseEntity<List<StatusTypeResponseDto>> findAll() {
+        List<StatusTypeResponseDto> res = service.findAll();
+        return ResponseEntity.ok(res);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<StatusTypeResponseDto> findById(@PathVariable String id) {
         StatusTypeResponseDto res = service.findById(id);
-        return ResponseEntity.ok(res);
-    }
-
-    @GetMapping("/code/{code}")
-    public ResponseEntity<StatusTypeResponseDto> findByCode(@PathVariable String code) {
-        StatusTypeResponseDto res = service.findByCode(code);
         return ResponseEntity.ok(res);
     }
 }

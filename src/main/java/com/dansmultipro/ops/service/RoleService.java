@@ -9,6 +9,4 @@ public interface RoleService {
     List<RoleResponseDto> findAll();
 
     RoleResponseDto findById(String id);
-
-    RoleResponseDto findByCode(String code);
 }

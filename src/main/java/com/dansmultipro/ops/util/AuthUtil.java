@@ -1,7 +1,7 @@
 package com.dansmultipro.ops.util;
 
 import com.dansmultipro.ops.constant.RoleTypeConstant;
-import com.dansmultipro.ops.model.user.User;
+import com.dansmultipro.ops.model.User;
 import com.dansmultipro.ops.pojo.AuthorizationPOJO;
 import com.dansmultipro.ops.repository.UserRepo;
 import java.util.Optional;
@@ -43,10 +43,7 @@ public final class AuthUtil {
 
     public boolean hasRole(RoleTypeConstant role) {
         Optional<AuthorizationPOJO> principal = resolvePrincipal();
-        if (principal.isEmpty()) {
-            return false;
-        }
-        return principal.get().getRole().equals(role);
+        return principal.map(authorizationPOJO -> authorizationPOJO.getRole().equals(role)).orElse(false);
     }
 
     private Optional<AuthorizationPOJO> resolvePrincipal() {

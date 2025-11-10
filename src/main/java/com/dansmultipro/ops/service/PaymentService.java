@@ -15,8 +15,6 @@ public interface PaymentService {
 
     ApiPostResponseDto create(PaymentCreateRequestDto request);
 
-    ApiPutResponseDto update(String id, PaymentUpdateRequestDto request);
-
     ApiDeleteResponseDto cancel(String id);
 
     ApiPutResponseDto approve(String id);

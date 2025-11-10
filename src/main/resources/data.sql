@@ -40,7 +40,7 @@ VALUES
     '$2a$12$CspfemU8FcWj2jRkUKXUXOpv9/jcvDQHWpMXOytCXRrtGMkCB1PMC',
     (SELECT id FROM roles WHERE code = 'SYSTEM'),
     TRUE, 0, CURRENT_TIMESTAMP,
-    (SELECT id FROM users WHERE email = 'sa@ops.local')
+    '00000000-0000-0000-0000-000000000001'
   ),
   (
     gen_random_uuid(),
@@ -49,7 +49,7 @@ VALUES
     '$2a$12$CspfemU8FcWj2jRkUKXUXOpv9/jcvDQHWpMXOytCXRrtGMkCB1PMC',
     (SELECT id FROM roles WHERE code = 'SA'),
     TRUE, 0, CURRENT_TIMESTAMP,
-    (SELECT id FROM users WHERE email = 'sa@ops.local')
+    '00000000-0000-0000-0000-000000000001'
   ),
   (
     '65e5db34-ad5b-438e-8934-73cd38e3d921',
@@ -58,7 +58,7 @@ VALUES
     '$2a$12$CspfemU8FcWj2jRkUKXUXOpv9/jcvDQHWpMXOytCXRrtGMkCB1PMC',
     (SELECT id FROM roles WHERE code = 'CUSTOMER'),
     TRUE, 0, CURRENT_TIMESTAMP,
-    (SELECT id FROM users WHERE email = 'sa@ops.local')
+    '00000000-0000-0000-0000-000000000001'
   );
 
 -- payments

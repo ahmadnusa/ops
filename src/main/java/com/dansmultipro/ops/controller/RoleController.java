@@ -25,19 +25,14 @@ public class RoleController {
     }
 
     @GetMapping
-    public List<RoleResponseDto> findAll() {
-        return service.findAll();
+    public ResponseEntity<List<RoleResponseDto>> findAll() {
+        List<RoleResponseDto> res = service.findAll();
+        return ResponseEntity.ok(res);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<RoleResponseDto> findById(@PathVariable String id) {
         RoleResponseDto res = service.findById(id);
-        return ResponseEntity.ok(res);
-    }
-
-    @GetMapping("/code/{code}")
-    public ResponseEntity<RoleResponseDto> findByCode(@PathVariable String code) {
-        RoleResponseDto res = service.findByCode(code);
         return ResponseEntity.ok(res);
     }
 }

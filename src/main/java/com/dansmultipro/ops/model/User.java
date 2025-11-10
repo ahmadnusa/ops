@@ -1,6 +1,5 @@
-package com.dansmultipro.ops.model.user;
+package com.dansmultipro.ops.model;
 
-import com.dansmultipro.ops.model.BaseEntity;
 import com.dansmultipro.ops.model.master.Role;
 
 import jakarta.persistence.Column;
@@ -26,7 +25,7 @@ public class User extends BaseEntity {
     @Column(nullable = false, length = 128)
     private String email;
 
-    @Column(name = "password", nullable = false, length = 255)
+    @Column(name = "password", nullable = false)
     private String password;
 
     @ManyToOne(fetch = FetchType.LAZY)

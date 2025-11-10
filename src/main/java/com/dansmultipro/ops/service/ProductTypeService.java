@@ -9,6 +9,4 @@ public interface ProductTypeService {
     List<ProductTypeResponseDto> findAll();
 
     ProductTypeResponseDto findById(String id);
-
-    ProductTypeResponseDto findByCode(String code);
 }

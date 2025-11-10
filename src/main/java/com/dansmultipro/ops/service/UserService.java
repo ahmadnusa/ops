@@ -6,6 +6,7 @@ import com.dansmultipro.ops.dto.auth.RegisterRequestDto;
 import com.dansmultipro.ops.dto.common.ApiPostResponseDto;
 import com.dansmultipro.ops.dto.common.ApiPutResponseDto;
 import com.dansmultipro.ops.dto.user.PasswordUpdateRequestDto;
+import com.dansmultipro.ops.dto.user.UserApproveRequestDto;
 import com.dansmultipro.ops.dto.user.UserResponseDto;
 import java.util.List;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -18,9 +19,9 @@ public interface UserService extends UserDetailsService {
 
     ApiPutResponseDto updatePassword(PasswordUpdateRequestDto request);
 
-    ApiPutResponseDto approveCustomer(String id);
+    ApiPutResponseDto approveCustomer(UserApproveRequestDto request);
 
-    List<UserResponseDto> getAll(Boolean isActive);
+    List<UserResponseDto> getAll(Boolean isActive, String roleCode);
 
     UserResponseDto getById(String id);
 }

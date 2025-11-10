@@ -2,10 +2,12 @@ package com.dansmultipro.ops.controller;
 
 import com.dansmultipro.ops.dto.common.ErrorResDto;
 import com.dansmultipro.ops.exception.*;
+import io.jsonwebtoken.JwtException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -69,6 +71,12 @@ public class ErrorHandler {
     public ResponseEntity<?> handleNullPointerException(NullPointerException ex) {
         ErrorResDto<String> errorRes = new ErrorResDto<>(ex.getMessage());
         return new ResponseEntity<>(errorRes, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<?> handleAccessDeniedException(AccessDeniedException ex) {
+        ErrorResDto<String> errorRes = new ErrorResDto<>("Access Denied: You do not have permission to access this resource");
+        return new ResponseEntity<>(errorRes, HttpStatus.FORBIDDEN);
     }
 
     private String extractDetail(String msg) {

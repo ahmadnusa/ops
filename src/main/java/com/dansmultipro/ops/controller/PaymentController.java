@@ -7,7 +7,6 @@ import com.dansmultipro.ops.dto.common.ApiPutResponseDto;
 import com.dansmultipro.ops.dto.payment.PaymentCreateRequestDto;
 import com.dansmultipro.ops.dto.payment.PaymentRejectRequestDto;
 import com.dansmultipro.ops.dto.payment.PaymentResponseDto;
-import com.dansmultipro.ops.dto.payment.PaymentUpdateRequestDto;
 import com.dansmultipro.ops.service.PaymentService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
@@ -37,17 +36,10 @@ public class PaymentController {
     }
 
     @PostMapping
+//    @PreAuthorize()
     public ResponseEntity<ApiPostResponseDto> create(@Valid @RequestBody PaymentCreateRequestDto request) {
         ApiPostResponseDto response = paymentService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<ApiPutResponseDto> update(
-            @PathVariable String id,
-            @Valid @RequestBody PaymentUpdateRequestDto request) {
-        ApiPutResponseDto response = paymentService.update(id, request);
-        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")

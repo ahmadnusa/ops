@@ -8,20 +8,25 @@ import com.dansmultipro.ops.dto.auth.RegisterRequestDto;
 import com.dansmultipro.ops.dto.common.ApiPostResponseDto;
 import com.dansmultipro.ops.dto.common.ApiPutResponseDto;
 import com.dansmultipro.ops.dto.user.PasswordUpdateRequestDto;
+import com.dansmultipro.ops.dto.user.UserApproveRequestDto;
 import com.dansmultipro.ops.dto.user.UserResponseDto;
 import com.dansmultipro.ops.exception.BusinessRuleException;
 import com.dansmultipro.ops.exception.ResourceNotFoundException;
 import com.dansmultipro.ops.model.master.Role;
-import com.dansmultipro.ops.model.user.User;
+import com.dansmultipro.ops.model.User;
 import com.dansmultipro.ops.repository.RoleRepo;
 import com.dansmultipro.ops.repository.UserRepo;
 import com.dansmultipro.ops.spec.UserSpecification;
 import com.dansmultipro.ops.service.UserService;
 import com.dansmultipro.ops.util.JwtUtil;
 import com.dansmultipro.ops.dto.auth.TokenPair;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+
+import jakarta.transaction.Transactional;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -60,8 +65,9 @@ public class UserServiceImpl extends BaseService implements UserService {
     }
 
     @Override
+    @Transactional
     public ApiPostResponseDto register(RegisterRequestDto request) {
-        validateEmailUniqueness(request.email(), null);
+        validateEmailUniqueness(request.email());
 
         User user = new User();
         user.setFullName(request.fullName());
@@ -69,10 +75,13 @@ public class UserServiceImpl extends BaseService implements UserService {
         user.setPassword(passwordEncoder.encode(request.password()));
 
         boolean authenticated = authUtil.isAuthenticated();
-        RoleTypeConstant targetRole = authenticated ? RoleTypeConstant.GATEWAY : RoleTypeConstant.CUSTOMER;
+
         if (authenticated) {
-            ensureSuperAdmin();
+            ensureSuperAdminRole();
         }
+
+        RoleTypeConstant targetRole = authenticated ? RoleTypeConstant.GATEWAY : RoleTypeConstant.CUSTOMER;
+
         user.setRole(fetchRoleByCode(targetRole.name()));
         boolean activeFlag = targetRole == RoleTypeConstant.GATEWAY;
         prepareInsert(user, activeFlag);
@@ -106,13 +115,11 @@ public class UserServiceImpl extends BaseService implements UserService {
     }
 
     @Override
+    @Transactional
     public ApiPutResponseDto updatePassword(PasswordUpdateRequestDto request) {
-        UUID loginId;
-        try {
-            loginId = authUtil.getLoginId();
-        } catch (IllegalStateException ex) {
-            throw new BusinessRuleException(messageBuilder("Authentication", ResponseConstant.AUTH_REQUIRED));
-        }
+        ensureCustomerRole();
+
+        UUID loginId = authUtil.getLoginId();
 
         User user = fetchUser(loginId);
 
@@ -133,33 +140,50 @@ public class UserServiceImpl extends BaseService implements UserService {
     }
 
     @Override
-    public ApiPutResponseDto approveCustomer(String id) {
-        ensureSuperAdmin();
-        User user = fetchUser(getUUID(id));
-        user.setIsActive(Boolean.TRUE);
-        prepareUpdate(user);
-        User updated = userRepo.save(user);
+    @Transactional
+    public ApiPutResponseDto approveCustomer(UserApproveRequestDto request) {
+        ensureSuperAdminRole();
+        List<User> approvedUsers = new ArrayList<>();
+        List<String> userIds = request.userIds();
+
+        for (String id : userIds) {
+            User user = fetchUser(getUUID(id));
+            if (!user.getIsActive()) {
+                user.setIsActive(Boolean.TRUE);
+                prepareUpdate(user);
+            }
+            approvedUsers.add(user);
+        }
+
+        List<User> updatedUsers = userRepo.saveAllAndFlush(approvedUsers);
 
         String message = messageBuilder(RESOURCE_NAME, ResponseConstant.UPDATED.getValue());
-        return new ApiPutResponseDto(updated.getOptLock(), message);
+        return new ApiPutResponseDto(updatedUsers.getFirst().getOptLock(), message);
     }
 
     @Override
-    public List<UserResponseDto> getAll(Boolean isActive) {
-        ensureSuperAdmin();
-        Specification<User> spec = UserSpecification.hasActiveStatus(isActive);
+    public List<UserResponseDto> getAll(Boolean isActive, String roleCode) {
+        ensureSuperAdminRole();
+        Specification<User> spec = Specification.allOf(
+                UserSpecification.hasActiveStatus(isActive),
+                UserSpecification.hasRole(roleCode)
+        ).and(
+                Specification.not(UserSpecification.hasRole(RoleTypeConstant.SA.name())
+                        .or(UserSpecification.hasRole(RoleTypeConstant.SYSTEM.name()))));
+
         List<User> users = userRepo.findAll(spec);
+
         return users
                 .stream()
-                .map(this::toResponse)
+                .map(this::toDto)
                 .toList();
     }
 
     @Override
     public UserResponseDto getById(String id) {
-        ensureSuperAdmin();
+        ensureSuperAdminRole();
         User user = fetchUser(getUUID(id));
-        return toResponse(user);
+        return toDto(user);
     }
 
     @Override
@@ -179,16 +203,20 @@ public class UserServiceImpl extends BaseService implements UserService {
                 List.of(authority));
     }
 
-    private void ensureSuperAdmin() {
+    private void ensureSuperAdminRole() {
         if (!authUtil.hasRole(RoleTypeConstant.SA)) {
             throw new BusinessRuleException(messageBuilder("Access", ResponseConstant.SUPER_ADMIN_REQUIRED));
         }
     }
 
-    private void validateEmailUniqueness(String email, UUID excludeId) {
-        boolean exists = excludeId == null
-                ? userRepo.existsByEmailIgnoreCase(email)
-                : userRepo.existsByEmailIgnoreCaseAndIdNot(email, excludeId);
+    private void ensureCustomerRole() {
+        if (!authUtil.hasRole(RoleTypeConstant.CUSTOMER)) {
+            throw new BusinessRuleException(messageBuilder("Access", ResponseConstant.CUSTOMER_REQUIRED));
+        }
+    }
+
+    private void validateEmailUniqueness(String email) {
+        boolean exists = userRepo.existsByEmailIgnoreCase(email);
         if (exists) {
             throw new BusinessRuleException(messageBuilder("Email", ResponseConstant.ALREADY_EXISTS));
         }
@@ -206,7 +234,7 @@ public class UserServiceImpl extends BaseService implements UserService {
                         messageBuilder("Role", ResponseConstant.NOT_FOUND)));
     }
 
-    private UserResponseDto toResponse(User entity) {
+    private UserResponseDto toDto(User entity) {
         return new UserResponseDto(
                 entity.getId().toString(),
                 entity.getFullName(),

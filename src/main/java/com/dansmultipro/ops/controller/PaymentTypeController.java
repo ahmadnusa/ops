@@ -23,19 +23,14 @@ public class PaymentTypeController {
     }
 
     @GetMapping
-    public List<PaymentTypeResponseDto> findAll() {
-        return service.findAll();
+    public ResponseEntity<List<PaymentTypeResponseDto>> findAll() {
+        List<PaymentTypeResponseDto> res = service.findAll();
+        return ResponseEntity.ok(res);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<PaymentTypeResponseDto> findById(@PathVariable String id) {
         PaymentTypeResponseDto res = service.findById(id);
-        return ResponseEntity.ok(res);
-    }
-
-    @GetMapping("/code/{code}")
-    public ResponseEntity<PaymentTypeResponseDto> findByCode(@PathVariable String code) {
-        PaymentTypeResponseDto res = service.findByCode(code);
         return ResponseEntity.ok(res);
     }
 }

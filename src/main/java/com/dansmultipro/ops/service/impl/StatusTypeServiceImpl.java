@@ -38,14 +38,6 @@ public class StatusTypeServiceImpl extends BaseService implements StatusTypeServ
         return toDto(statusType);
     }
 
-    @Override
-    public StatusTypeResponseDto findByCode(String code) {
-        StatusType statusType = repository.findByCode(code).orElseThrow(
-                            () -> new ResourceNotFoundException(messageBuilder("Status Type", ResponseConstant.NOT_FOUND)));
-
-        return toDto(statusType);
-    }
-
     private StatusTypeResponseDto toDto(StatusType entity) {
         return new StatusTypeResponseDto(
                 entity.getId().toString(),

@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 import com.dansmultipro.ops.model.master.PaymentType;
 import com.dansmultipro.ops.model.master.ProductType;
 import com.dansmultipro.ops.model.master.StatusType;
-import com.dansmultipro.ops.model.user.User;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -41,10 +40,10 @@ public class Payment extends BaseEntity {
     @JoinColumn(name = "status_type_id", nullable = false)
     private StatusType status;
 
-    @Column(length = 255)
+    @Column(name = "description")
     private String description;
 
-    @Column(name = "gateway_note", length = 255)
+    @Column(name = "gateway_note")
     private String gatewayNote;
 
     @Column(name = "reference_no", length = 64)

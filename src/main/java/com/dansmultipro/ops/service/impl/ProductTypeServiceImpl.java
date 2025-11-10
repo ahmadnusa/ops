@@ -38,14 +38,6 @@ public class ProductTypeServiceImpl extends BaseService implements ProductTypeSe
         return toDto(productType);
     }
 
-    @Override
-    public ProductTypeResponseDto findByCode(String code) {
-        ProductType productType = repository.findByCode(code).orElseThrow(
-                () -> new ResourceNotFoundException(messageBuilder("Product Type", ResponseConstant.NOT_FOUND)));
-
-        return toDto(productType);
-    }
-
     private ProductTypeResponseDto toDto(ProductType entity) {
         return new ProductTypeResponseDto(
                 entity.getId().toString(),

@@ -27,7 +27,7 @@ public abstract class BaseEntity {
     @Column
     private LocalDateTime updatedAt;
 
-    @Column
+    @Column(nullable = false)
     private Boolean isActive;
 
     @Version

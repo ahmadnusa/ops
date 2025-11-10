@@ -24,19 +24,14 @@ public class ProductTypeController {
     }
 
     @GetMapping
-    public List<ProductTypeResponseDto> findAll() {
-        return service.findAll();
+    public ResponseEntity<List<ProductTypeResponseDto>> findAll() {
+        List<ProductTypeResponseDto> res = service.findAll();
+        return ResponseEntity.ok(res);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductTypeResponseDto> findById(@PathVariable String id) {
         ProductTypeResponseDto res = service.findById(id);
-        return ResponseEntity.ok(res);
-    }
-
-    @GetMapping("/code/{code}")
-    public ResponseEntity<ProductTypeResponseDto> findByCode(@PathVariable String code) {
-        ProductTypeResponseDto res = service.findByCode(code);
         return ResponseEntity.ok(res);
     }
 }

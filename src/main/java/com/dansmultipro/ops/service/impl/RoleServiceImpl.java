@@ -38,14 +38,6 @@ public class RoleServiceImpl extends BaseService implements RoleService {
         return toDto(role);
     }
 
-    @Override
-    public RoleResponseDto findByCode(String code) {
-        Role role = repository.findByCode(code).orElseThrow(
-                () -> new ResourceNotFoundException(messageBuilder("Role", ResponseConstant.NOT_FOUND)));
-
-        return toDto(role);
-    }
-
     private RoleResponseDto toDto(Role entity) {
         return new RoleResponseDto(
                 entity.getId().toString(),

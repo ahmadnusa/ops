@@ -1,7 +1,7 @@
 package com.dansmultipro.ops.util;
 
 import com.dansmultipro.ops.dto.auth.TokenPair;
-import com.dansmultipro.ops.model.user.User;
+import com.dansmultipro.ops.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -66,15 +66,7 @@ public class JwtUtil {
                     .parseClaimsJws(token)
                     .getBody();
         } catch (JwtException ex) {
-            throw new JwtException("Invalid token provided", ex);
+            throw new JwtException("Invalid token provided");
         }
-    }
-
-    public String validateAndGetSubject(String token) {
-        return parseClaims(token).getSubject();
-    }
-
-    public Duration getExpiration() {
-        return expiration;
     }
 }

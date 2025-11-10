@@ -37,13 +37,6 @@ public class PaymentTypeServiceImpl extends BaseService implements PaymentTypeSe
         return toDto(paymentType);
     }
 
-    @Override
-    public PaymentTypeResponseDto findByCode(String code) {
-        PaymentType paymentType = repository.findByCode(code).orElseThrow(
-                () -> new ResourceNotFoundException(messageBuilder("Payment Type", ResponseConstant.NOT_FOUND)));
-        return toDto(paymentType);
-    }
-
     private PaymentTypeResponseDto toDto(PaymentType entity) {
         return new PaymentTypeResponseDto(
                 entity.getId().toString(),

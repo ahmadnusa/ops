@@ -9,6 +9,4 @@ public interface PaymentTypeService {
     List<PaymentTypeResponseDto> findAll();
 
     PaymentTypeResponseDto findById(String id);
-
-    PaymentTypeResponseDto findByCode(String code);
 }

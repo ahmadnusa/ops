@@ -9,6 +9,4 @@ public interface StatusTypeService {
     List<StatusTypeResponseDto> findAll();
 
     StatusTypeResponseDto findById(String id);
-
-    StatusTypeResponseDto findByCode(String code);
 }

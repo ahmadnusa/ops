@@ -6,10 +6,6 @@ import java.util.UUID;
 import org.springframework.data.jpa.domain.Specification;
 
 public final class PaymentSpecsification {
-
-    private PaymentSpecsification() {
-    }
-
     public static Specification<Payment> isActive(Boolean isActive) {
         return (root, query, builder) -> isActive == null
                 ? null
