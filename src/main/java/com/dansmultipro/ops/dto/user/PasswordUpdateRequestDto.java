@@ -7,7 +7,5 @@ public record PasswordUpdateRequestDto(
                 @NotBlank(message = "Old password is required.")
                 String oldPassword,
                 @NotBlank(message = "New password is required.")
-                String newPassword,
-                @NotNull(message = "Optimistic lock value is required.")
-                Integer optLock) {
+                String newPassword) {
 }

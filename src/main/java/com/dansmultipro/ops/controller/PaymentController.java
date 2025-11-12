@@ -1,5 +1,6 @@
 package com.dansmultipro.ops.controller;
 
+import com.dansmultipro.ops.dto.common.ApiDeleteResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -43,11 +44,11 @@ public class PaymentController {
 
     @PutMapping("/{id}/{status}")
     @PreAuthorize("hasAnyRole('CUSTOMER','GATEWAY')")
-    public ResponseEntity<ApiPutResponseDto> updateStatus(
+    public ResponseEntity<ApiDeleteResponseDto> updateStatus(
             @PathVariable String id,
             @PathVariable String status,
             @Valid @RequestBody(required = false) PaymentStatusUpdateRequestDto request) {
-        ApiPutResponseDto response = paymentService.updateStatus(id, status, request);
+        ApiDeleteResponseDto response = paymentService.updateStatus(id, status, request);
         return ResponseEntity.ok(response);
     }
 

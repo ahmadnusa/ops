@@ -2,6 +2,7 @@ package com.dansmultipro.ops.controller;
 
 import java.util.List;
 
+import com.dansmultipro.ops.dto.common.ApiDeleteResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -56,18 +57,18 @@ public class UserController {
 
     @PreAuthorize("hasRole('SA')")
     @PutMapping("/approve")
-    public ResponseEntity<ApiPutResponseDto> approve(
+    public ResponseEntity<ApiDeleteResponseDto> approve(
             @RequestBody List<String> customerIds
     ) {
-        ApiPutResponseDto response = userService.approveCustomer(customerIds);
+        ApiDeleteResponseDto response = userService.approveCustomer(customerIds);
         return ResponseEntity.ok(response);
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @PutMapping("/password")
-    public ResponseEntity<ApiPutResponseDto> updatePassword(
+    public ResponseEntity<ApiDeleteResponseDto> updatePassword(
             @Valid @RequestBody PasswordUpdateRequestDto request) {
-        ApiPutResponseDto response = userService.updatePassword(request);
+        ApiDeleteResponseDto response = userService.updatePassword(request);
         return ResponseEntity.ok(response);
     }
 }

@@ -7,6 +7,7 @@ import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 import com.dansmultipro.ops.config.RabbitConfig;
+import com.dansmultipro.ops.dto.common.ApiDeleteResponseDto;
 import com.dansmultipro.ops.dto.notification.EmailNotificationMessageDto;
 import com.dansmultipro.ops.dto.payment.*;
 import com.dansmultipro.ops.util.EmailUtil;
@@ -83,8 +84,7 @@ public class PaymentServiceImpl extends BaseService implements PaymentService {
         payment.setGatewayNote(null);
         payment.setReferenceNo(null);
 
-        prepareCreate(payment);
-        Payment saved = paymentRepo.save(payment);
+        Payment saved = paymentRepo.save(prepareCreate(payment));
 
         notifyGatewayOnCreation(saved);
 
@@ -95,7 +95,7 @@ public class PaymentServiceImpl extends BaseService implements PaymentService {
     @Override
     @Transactional
     @CacheEvict(value = "payments", allEntries = true)
-    public ApiPutResponseDto updateStatus(String id, String status, PaymentStatusUpdateRequestDto request) {
+    public ApiDeleteResponseDto updateStatus(String id, String status, PaymentStatusUpdateRequestDto request) {
         String normalizedStatus = status.trim().toUpperCase();
 
         Payment payment = fetchPayment(getUUID(id));
@@ -123,15 +123,14 @@ public class PaymentServiceImpl extends BaseService implements PaymentService {
                     messageBuilder("Status", ResponseConstant.INVALID_VALUE));
         }
 
-        prepareUpdate(payment);
-        Payment updated = paymentRepo.save(payment);
+        Payment updated = paymentRepo.save(prepareUpdate(payment));
 
         if (!normalizedStatus.equals(StatusTypeConstant.CANCELLED.name())) {
             notifyCustomerOnStatusChange(updated);
         }
 
         String message = messageBuilder(RESOURCE_NAME, ResponseConstant.UPDATED.getValue());
-        return new ApiPutResponseDto(updated.getOptLock(), message);
+        return new ApiDeleteResponseDto(message);
     }
 
     @Override
@@ -152,7 +151,7 @@ public class PaymentServiceImpl extends BaseService implements PaymentService {
     @Override
     @Cacheable(
             value = "payments",
-            key = "'getAllByCustomer:' + (#status == null ? 'ALL' : #status.name()) + ':' + #page + ':' + #size + ':' + #root.target.authUtil.getLoginId()"
+            key = "'getAllByCustomer:' + (#status == null ? 'ALL' : #status.name()) + ':' + #page + ':' + #size + ':' + @authUtil.getLoginId()"
     )
     public PageResponseDto<PaymentCustomerResponseDto> getAllByCustomer(StatusTypeConstant status, int page, int size) {
         ensureCustomerRole();
@@ -286,7 +285,7 @@ public class PaymentServiceImpl extends BaseService implements PaymentService {
     private Pageable buildPageable(int page, int size) {
         int safePage = Math.max(page, 0);
         int safeSize = size <= 0 ? 10 : size;
-        return PageRequest.of(safePage, safeSize, Sort.by(Sort.Direction.DESC, "createdAt"));
+        return PageRequest.of(safePage, safeSize);
     }
 
     private PaymentResponseDto toListDto(Payment payment) {
@@ -322,9 +321,7 @@ public class PaymentServiceImpl extends BaseService implements PaymentService {
                 page.getSize(),
                 page.getTotalElements(),
                 page.getTotalPages(),
-                page.isLast(),
-                "createdAt",
-                "DESC"
+                page.isLast()
         );
     }
 }

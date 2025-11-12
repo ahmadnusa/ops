@@ -42,7 +42,8 @@ public class SecurityConfig {
     @Bean
     public List<RequestMatcher> getMatchers() {
         ArrayList<RequestMatcher> matchers = new ArrayList<>();
-        matchers.add(PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/auth/register"));
+        matchers.add(PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/users" +
+                "/register"));
         matchers.add(PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/auth/login"));
         matchers.add(PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, "/v3/api-docs/**"));
         matchers.add(PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, "/swagger-ui/**"));

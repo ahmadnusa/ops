@@ -1,12 +1,10 @@
 package com.dansmultipro.ops.service.impl;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
-import org.springframework.context.annotation.Lazy;
+import com.dansmultipro.ops.dto.common.ApiDeleteResponseDto;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -17,7 +15,6 @@ import com.dansmultipro.ops.constant.ResponseConstant;
 import com.dansmultipro.ops.constant.RoleTypeConstant;
 import com.dansmultipro.ops.dto.auth.RegisterRequestDto;
 import com.dansmultipro.ops.dto.common.ApiPostResponseDto;
-import com.dansmultipro.ops.dto.common.ApiPutResponseDto;
 import com.dansmultipro.ops.dto.user.PasswordUpdateRequestDto;
 import com.dansmultipro.ops.dto.user.UserResponseDto;
 import com.dansmultipro.ops.exception.BusinessRuleException;
@@ -27,7 +24,6 @@ import com.dansmultipro.ops.model.master.Role;
 import com.dansmultipro.ops.repository.RoleRepo;
 import com.dansmultipro.ops.service.UserService;
 import com.dansmultipro.ops.spec.UserSpecification;
-import com.dansmultipro.ops.util.JwtUtil;
 
 import jakarta.transaction.Transactional;
 
@@ -41,9 +37,7 @@ public class UserServiceImpl extends BaseService implements UserService {
 
     public UserServiceImpl(
             RoleRepo roleRepo,
-            PasswordEncoder passwordEncoder,
-            JwtUtil jwtUtil,
-            @Lazy AuthenticationManager authenticationManager) {
+            PasswordEncoder passwordEncoder) {
         this.roleRepo = roleRepo;
         this.passwordEncoder = passwordEncoder;
     }
@@ -54,6 +48,7 @@ public class UserServiceImpl extends BaseService implements UserService {
         validateEmailUniqueness(request.email());
 
         RoleTypeConstant targetRole = determineRegistrationRole();
+
         if (targetRole == RoleTypeConstant.GATEWAY && gatewayUserExists()) {
             throw new BusinessRuleException("Gateway user already exists.");
         }
@@ -65,24 +60,23 @@ public class UserServiceImpl extends BaseService implements UserService {
         user.setRole(fetchRole(targetRole.name()));
 
         boolean activeFlag = targetRole == RoleTypeConstant.GATEWAY;
-        prepareCreate(user, activeFlag);
 
-        User saved = userRepo.save(user);
+
+        User saved = userRepo.save(prepareCreate(user, activeFlag));
+
         String message = messageBuilder(RESOURCE_NAME, ResponseConstant.SAVED.getValue());
         return new ApiPostResponseDto(saved.getId().toString(), message);
     }
 
     @Override
     @Transactional
-    public ApiPutResponseDto updatePassword(PasswordUpdateRequestDto request) {
-        ensureCustomerRole();
-
+    public ApiDeleteResponseDto updatePassword(PasswordUpdateRequestDto request) {
         UUID loginId = authUtil.getLoginId();
 
         User user = fetchUser(loginId);
 
-        if (!Objects.equals(user.getOptLock(), request.optLock())) {
-            throw new BusinessRuleException(messageBuilder(RESOURCE_NAME, ResponseConstant.STALE_VERSION));
+        if (!user.getIsActive()) {
+            throw new BusinessRuleException(messageBuilder(RESOURCE_NAME, ResponseConstant.ACCOUNT_INACTIVE));
         }
 
         if (!passwordEncoder.matches(request.oldPassword(), user.getPassword())) {
@@ -90,17 +84,16 @@ public class UserServiceImpl extends BaseService implements UserService {
         }
 
         user.setPassword(passwordEncoder.encode(request.newPassword()));
-        prepareUpdate(user);
-        User updated = userRepo.save(user);
+
+        userRepo.save(prepareUpdate(user));
 
         String message = messageBuilder(RESOURCE_NAME, ResponseConstant.UPDATED.getValue());
-        return new ApiPutResponseDto(updated.getOptLock(), message);
+        return new ApiDeleteResponseDto(message);
     }
 
     @Override
     @Transactional
-    public ApiPutResponseDto approveCustomer(List<String> customerIds) {
-        ensureSuperAdminRole();
+    public ApiDeleteResponseDto approveCustomer(List<String> customerIds) {
         if (customerIds == null || customerIds.isEmpty()) {
             throw new BusinessRuleException("customerIds must not be empty.");
         }
@@ -119,15 +112,14 @@ public class UserServiceImpl extends BaseService implements UserService {
             }
         });
 
-        List<User> updatedUsers = userRepo.saveAllAndFlush(users);
+        userRepo.saveAllAndFlush(users);
 
         String message = messageBuilder(RESOURCE_NAME, ResponseConstant.UPDATED.getValue());
-        return new ApiPutResponseDto(updatedUsers.getFirst().getOptLock(), message);
+        return new ApiDeleteResponseDto(message);
     }
 
     @Override
     public List<UserResponseDto> getAll(Boolean isActive, String roleCode) {
-        ensureSuperAdminRole();
         Specification<User> spec = Specification.allOf(
                 UserSpecification.hasActiveStatus(isActive),
                 UserSpecification.hasRole(roleCode))
@@ -145,7 +137,6 @@ public class UserServiceImpl extends BaseService implements UserService {
 
     @Override
     public UserResponseDto getById(String id) {
-        ensureSuperAdminRole();
         User user = fetchUser(getUUID(id));
         return toDto(user);
     }
@@ -170,12 +161,6 @@ public class UserServiceImpl extends BaseService implements UserService {
     private void ensureSuperAdminRole() {
         if (!authUtil.hasRole(RoleTypeConstant.SA)) {
             throw new BusinessRuleException(messageBuilder("Access", ResponseConstant.SUPER_ADMIN_REQUIRED));
-        }
-    }
-
-    private void ensureCustomerRole() {
-        if (!authUtil.hasRole(RoleTypeConstant.CUSTOMER)) {
-            throw new BusinessRuleException(messageBuilder("Access", ResponseConstant.CUSTOMER_REQUIRED));
         }
     }
 

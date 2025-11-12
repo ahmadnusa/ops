@@ -10,8 +10,6 @@ public class PageResponseDto<T> {
     private long totalElements;
     private int totalPages;
     private boolean last;
-    private String sortBy;
-    private String sortDirection;
 
     public PageResponseDto() {
     }
@@ -22,17 +20,13 @@ public class PageResponseDto<T> {
             int size,
             long totalElements,
             int totalPages,
-            boolean last,
-            String sortBy,
-            String sortDirection) {
+            boolean last) {
         this.content = content;
         this.page = page;
         this.size = size;
         this.totalElements = totalElements;
         this.totalPages = totalPages;
         this.last = last;
-        this.sortBy = sortBy;
-        this.sortDirection = sortDirection;
     }
 
     public List<T> getContent() {
@@ -81,21 +75,5 @@ public class PageResponseDto<T> {
 
     public void setLast(boolean last) {
         this.last = last;
-    }
-
-    public String getSortBy() {
-        return sortBy;
-    }
-
-    public void setSortBy(String sortBy) {
-        this.sortBy = sortBy;
-    }
-
-    public String getSortDirection() {
-        return sortDirection;
-    }
-
-    public void setSortDirection(String sortDirection) {
-        this.sortDirection = sortDirection;
     }
 }
