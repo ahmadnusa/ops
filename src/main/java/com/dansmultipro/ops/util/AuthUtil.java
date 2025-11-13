@@ -2,11 +2,12 @@ package com.dansmultipro.ops.util;
 
 import com.dansmultipro.ops.constant.RoleTypeConstant;
 import com.dansmultipro.ops.pojo.AuthorizationPOJO;
-import java.util.Optional;
-import java.util.UUID;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
+import java.util.UUID;
 
 @Component
 public final class AuthUtil {
@@ -19,12 +20,6 @@ public final class AuthUtil {
         AuthorizationPOJO principal = resolvePrincipal()
                 .orElseThrow(() -> new IllegalStateException("Authentication is required."));
         return UUID.fromString(principal.id());
-    }
-
-    public RoleTypeConstant roleLogin() {
-        AuthorizationPOJO principal = resolvePrincipal()
-                .orElseThrow(() -> new IllegalStateException("Authentication is required."));
-        return principal.role();
     }
 
     public boolean hasRole(RoleTypeConstant role) {

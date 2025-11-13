@@ -1,10 +1,11 @@
 package com.dansmultipro.ops.repository;
 
-import java.util.Optional;
-import java.util.UUID;
+import com.dansmultipro.ops.model.master.PaymentType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import com.dansmultipro.ops.model.master.PaymentType;
+
+import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface PaymentTypeRepo extends JpaRepository<PaymentType, UUID> {

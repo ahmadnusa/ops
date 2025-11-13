@@ -1,17 +1,16 @@
 package com.dansmultipro.ops.service.impl;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-
-import org.springframework.stereotype.Service;
-
 import com.dansmultipro.ops.constant.ResponseConstant;
 import com.dansmultipro.ops.dto.master.RoleResponseDto;
 import com.dansmultipro.ops.exception.ResourceNotFoundException;
 import com.dansmultipro.ops.model.master.Role;
 import com.dansmultipro.ops.repository.RoleRepo;
 import com.dansmultipro.ops.service.RoleService;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 @Service
 public class RoleServiceImpl extends BaseService implements RoleService {

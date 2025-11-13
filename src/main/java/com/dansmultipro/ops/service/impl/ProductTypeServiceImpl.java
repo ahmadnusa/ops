@@ -6,7 +6,6 @@ import com.dansmultipro.ops.exception.ResourceNotFoundException;
 import com.dansmultipro.ops.model.master.ProductType;
 import com.dansmultipro.ops.repository.ProductTypeRepo;
 import com.dansmultipro.ops.service.ProductTypeService;
-
 import org.springframework.stereotype.Service;
 
 import java.util.List;

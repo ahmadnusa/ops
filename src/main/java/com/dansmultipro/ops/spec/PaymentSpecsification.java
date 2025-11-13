@@ -2,8 +2,9 @@ package com.dansmultipro.ops.spec;
 
 import com.dansmultipro.ops.constant.StatusTypeConstant;
 import com.dansmultipro.ops.model.Payment;
-import java.util.UUID;
 import org.springframework.data.jpa.domain.Specification;
+
+import java.util.UUID;
 
 public final class PaymentSpecsification {
     public static Specification<Payment> isActive(Boolean isActive) {

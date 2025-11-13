@@ -8,9 +8,10 @@ import com.dansmultipro.ops.model.User;
 import com.dansmultipro.ops.repository.UserRepo;
 import com.dansmultipro.ops.util.AuthUtil;
 import com.dansmultipro.ops.util.UUIDUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
-import org.springframework.beans.factory.annotation.Autowired;
 
 public abstract class BaseService {
 

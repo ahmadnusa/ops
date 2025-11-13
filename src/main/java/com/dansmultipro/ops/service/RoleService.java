@@ -1,8 +1,8 @@
 package com.dansmultipro.ops.service;
 
-import java.util.List;
-
 import com.dansmultipro.ops.dto.master.RoleResponseDto;
+
+import java.util.List;
 
 public interface RoleService {
 

@@ -1,8 +1,18 @@
 package com.dansmultipro.ops.filter;
 
-import java.io.IOException;
-import java.util.List;
-
+import com.dansmultipro.ops.constant.RoleTypeConstant;
+import com.dansmultipro.ops.dto.common.ErrorResDto;
+import com.dansmultipro.ops.exception.BlacklistedTokenException;
+import com.dansmultipro.ops.pojo.AuthorizationPOJO;
+import com.dansmultipro.ops.util.JwtUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -13,18 +23,8 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.dansmultipro.ops.constant.RoleTypeConstant;
-import com.dansmultipro.ops.dto.common.ErrorResDto;
-import com.dansmultipro.ops.pojo.AuthorizationPOJO;
-import com.dansmultipro.ops.util.JwtUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.List;
 
 @Component
 public class TokenFilter extends OncePerRequestFilter {
@@ -73,8 +73,12 @@ public class TokenFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
             filterChain.doFilter(request, response);
-        } catch (JwtException ex) {
+        } catch (BlacklistedTokenException ex) {
             writeJsonError(response, ex.getMessage());
+        } catch (ExpiredJwtException ex) {
+            writeJsonError(response, "Token has expired");
+        } catch (JwtException ex) {
+            writeJsonError(response, "Invalid token provided");
         } catch (Exception ex) {
             ex.printStackTrace();
             writeJsonError(response, "Unauthorized");

@@ -8,6 +8,8 @@ import org.mockito.Mockito;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,7 +58,7 @@ public abstract class AbstractServiceIntegrationTest {
     protected PaymentRepo paymentRepo;
 
     @Autowired
-    protected org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+    protected PasswordEncoder passwordEncoder;
 
     @MockitoBean
     protected AuthUtil authUtil;
@@ -69,6 +71,9 @@ public abstract class AbstractServiceIntegrationTest {
 
     @MockitoBean
     protected EmailNotificationListener emailNotificationListener;
+
+    @MockitoBean
+    protected StringRedisTemplate stringRedisTemplate;
 
     protected Role systemRole;
     protected Role customerRole;
@@ -108,8 +113,7 @@ public abstract class AbstractServiceIntegrationTest {
 
         systemUser = createUser("System", "system@ops.test", systemRole, true,
                 "password");
-        customerUser = createUser("Customer User", "customer@ops.local", customerRole, true,
-                "password");
+        customerUser = createUser("Customer User", "customer@ops.local", customerRole, true, "password");
         gatewayUser = createUser("Gateway User", "gateway@ops.local", gatewayRole, true,
                 "password");
 

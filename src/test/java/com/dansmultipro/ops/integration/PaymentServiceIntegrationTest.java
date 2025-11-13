@@ -6,7 +6,7 @@ import static org.mockito.Mockito.*;
 
 import com.dansmultipro.ops.constant.RoleTypeConstant;
 import com.dansmultipro.ops.constant.StatusTypeConstant;
-import com.dansmultipro.ops.dto.common.ApiDeleteResponseDto;
+import com.dansmultipro.ops.dto.common.ApiResponseDto;
 import com.dansmultipro.ops.dto.common.ApiPostResponseDto;
 import com.dansmultipro.ops.dto.payment.*;
 import com.dansmultipro.ops.exception.BusinessRuleException;
@@ -115,7 +115,7 @@ public class PaymentServiceIntegrationTest extends AbstractServiceIntegrationTes
         when(authUtil.getLoginId()).thenReturn(customerUser.getId());
         when(authUtil.hasRole(RoleTypeConstant.CUSTOMER)).thenReturn(true);
 
-        ApiDeleteResponseDto response = paymentService.updateStatus(
+        ApiResponseDto response = paymentService.updateStatus(
                 payment.getId().toString(),
                 "CANCELLED",
                 null);
@@ -140,7 +140,7 @@ public class PaymentServiceIntegrationTest extends AbstractServiceIntegrationTes
 
         PaymentStatusUpdateRequestDto request = new PaymentStatusUpdateRequestDto("Invalid account");
 
-        ApiDeleteResponseDto response = paymentService.updateStatus(
+        ApiResponseDto response = paymentService.updateStatus(
                 payment.getId().toString(),
                 "REJECTED",
                 request);
@@ -163,7 +163,7 @@ public class PaymentServiceIntegrationTest extends AbstractServiceIntegrationTes
         when(authUtil.hasRole(RoleTypeConstant.CUSTOMER)).thenReturn(false);
         when(authUtil.hasRole(RoleTypeConstant.GATEWAY)).thenReturn(true);
 
-        ApiDeleteResponseDto response = paymentService.updateStatus(
+        ApiResponseDto response = paymentService.updateStatus(
                 payment.getId().toString(),
                 "APPROVED",
                 null);
@@ -323,6 +323,7 @@ public class PaymentServiceIntegrationTest extends AbstractServiceIntegrationTes
         when(authUtil.hasRole(RoleTypeConstant.CUSTOMER)).thenReturn(true);
 
         PageResponseDto<PaymentCustomerResponseDto> response = paymentService.getAllByCustomer(
+                customerUser.getId(),
                 null,
                 0,
                 10);
@@ -331,15 +332,6 @@ public class PaymentServiceIntegrationTest extends AbstractServiceIntegrationTes
                 .extracting(PaymentCustomerResponseDto::customerNumber)
                 .allMatch(number -> number.startsWith("CUST-"));
         assertThat(response.getTotalElements()).isEqualTo(2);
-    }
-
-    @Test
-    void getAllByCustomerShouldThrowWhenRoleMissing() {
-        when(authUtil.hasRole(RoleTypeConstant.CUSTOMER)).thenReturn(false);
-
-        assertThatThrownBy(() -> paymentService.getAllByCustomer(null, 0, 10))
-                .isInstanceOf(BusinessRuleException.class)
-                .hasMessageContaining("Customer privileges");
     }
 
     @Test

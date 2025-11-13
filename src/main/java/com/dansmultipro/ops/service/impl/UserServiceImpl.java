@@ -1,24 +1,12 @@
 package com.dansmultipro.ops.service.impl;
 
-import java.security.SecureRandom;
-import java.util.List;
-import java.util.UUID;
-
 import com.dansmultipro.ops.config.RabbitConfig;
-import com.dansmultipro.ops.dto.common.ApiDeleteResponseDto;
-import com.dansmultipro.ops.dto.notification.EmailNotificationMessageDto;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
 import com.dansmultipro.ops.constant.ResponseConstant;
 import com.dansmultipro.ops.constant.RoleTypeConstant;
 import com.dansmultipro.ops.dto.auth.RegisterRequestDto;
 import com.dansmultipro.ops.dto.common.ApiPostResponseDto;
+import com.dansmultipro.ops.dto.common.ApiResponseDto;
+import com.dansmultipro.ops.dto.notification.EmailNotificationMessageDto;
 import com.dansmultipro.ops.dto.user.ForgotPasswordRequestDto;
 import com.dansmultipro.ops.dto.user.PasswordUpdateRequestDto;
 import com.dansmultipro.ops.dto.user.UserResponseDto;
@@ -29,16 +17,23 @@ import com.dansmultipro.ops.model.master.Role;
 import com.dansmultipro.ops.repository.RoleRepo;
 import com.dansmultipro.ops.service.UserService;
 import com.dansmultipro.ops.spec.UserSpecification;
-
 import jakarta.transaction.Transactional;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.security.SecureRandom;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 public class UserServiceImpl extends BaseService implements UserService {
 
     private static final String RESOURCE_NAME = "User";
-    private static final String TEMP_PASSWORD_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
-    private static final int TEMP_PASSWORD_LENGTH = 12;
-    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final RoleRepo roleRepo;
     private final PasswordEncoder passwordEncoder;
@@ -81,7 +76,7 @@ public class UserServiceImpl extends BaseService implements UserService {
 
     @Override
     @Transactional
-    public ApiDeleteResponseDto updatePassword(PasswordUpdateRequestDto request) {
+    public ApiResponseDto updatePassword(PasswordUpdateRequestDto request) {
         UUID loginId = authUtil.getLoginId();
 
         User user = fetchUser(loginId);
@@ -99,12 +94,12 @@ public class UserServiceImpl extends BaseService implements UserService {
         userRepo.save(prepareUpdate(user));
 
         String message = messageBuilder(RESOURCE_NAME, ResponseConstant.UPDATED.getValue());
-        return new ApiDeleteResponseDto(message);
+        return new ApiResponseDto(message);
     }
 
     @Override
     @Transactional
-    public ApiDeleteResponseDto forgotPassword(ForgotPasswordRequestDto request) {
+    public ApiResponseDto forgotPassword(ForgotPasswordRequestDto request) {
         User user = userRepo.findByEmailIgnoreCase(request.email())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         messageBuilder("Email", ResponseConstant.NOT_FOUND)));
@@ -121,12 +116,12 @@ public class UserServiceImpl extends BaseService implements UserService {
         notifyForgotPassword(user, temporaryPassword);
 
         String message = messageBuilder("User password", ResponseConstant.UPDATED.getValue());
-        return new ApiDeleteResponseDto(message);
+        return new ApiResponseDto(message);
     }
 
     @Override
     @Transactional
-    public ApiDeleteResponseDto approveCustomer(List<String> customerIds) {
+    public ApiResponseDto approveCustomer(List<String> customerIds) {
         if (customerIds == null || customerIds.isEmpty()) {
             throw new BusinessRuleException("customerIds must not be empty.");
         }
@@ -148,7 +143,7 @@ public class UserServiceImpl extends BaseService implements UserService {
         userRepo.saveAllAndFlush(users);
 
         String message = messageBuilder(RESOURCE_NAME, ResponseConstant.UPDATED.getValue());
-        return new ApiDeleteResponseDto(message);
+        return new ApiResponseDto(message);
     }
 
     @Override
@@ -239,21 +234,27 @@ public class UserServiceImpl extends BaseService implements UserService {
     }
 
     private String generateTemporaryPassword() {
-        StringBuilder builder = new StringBuilder(TEMP_PASSWORD_LENGTH);
-        for (int i = 0; i < TEMP_PASSWORD_LENGTH; i++) {
-            int index = SECURE_RANDOM.nextInt(TEMP_PASSWORD_CHARS.length());
-            builder.append(TEMP_PASSWORD_CHARS.charAt(index));
+        String chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+        int tempPasswordLength = 12;
+        SecureRandom secureRandom = new SecureRandom();
+
+        StringBuilder builder = new StringBuilder(tempPasswordLength);
+        for (int i = 0; i < tempPasswordLength; i++) {
+            int index = secureRandom.nextInt(chars.length());
+            builder.append(chars.charAt(index));
         }
+
         return builder.toString();
     }
 
     private void notifyForgotPassword(User user, String temporaryPassword) {
-        EmailNotificationMessageDto message = EmailNotificationMessageDto.forgotPasswordMessage(
+        EmailNotificationMessageDto message = new EmailNotificationMessageDto(
                 user.getEmail(),
+                null,
                 temporaryPassword);
 
         rabbitTemplate.convertAndSend(
-                RabbitConfig.PAYMENT_NOTIFICATION_EXCHANGE,
+                RabbitConfig.NOTIFICATION_EXCHANGE,
                 RabbitConfig.FORGOT_PASSWORD_NOTIFICATION_ROUTING_KEY,
                 message);
     }

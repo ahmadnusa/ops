@@ -1,29 +1,14 @@
 package com.dansmultipro.ops.service.impl;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
-
 import com.dansmultipro.ops.config.RabbitConfig;
-import com.dansmultipro.ops.dto.common.ApiDeleteResponseDto;
-import com.dansmultipro.ops.dto.notification.EmailNotificationMessageDto;
-import com.dansmultipro.ops.dto.notification.PaymentEmailPayload;
-import com.dansmultipro.ops.dto.payment.*;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Service;
-
 import com.dansmultipro.ops.constant.ResponseConstant;
 import com.dansmultipro.ops.constant.RoleTypeConstant;
 import com.dansmultipro.ops.constant.StatusTypeConstant;
 import com.dansmultipro.ops.dto.common.ApiPostResponseDto;
+import com.dansmultipro.ops.dto.common.ApiResponseDto;
+import com.dansmultipro.ops.dto.notification.EmailNotificationMessageDto;
+import com.dansmultipro.ops.dto.notification.PaymentEmailPayload;
+import com.dansmultipro.ops.dto.payment.*;
 import com.dansmultipro.ops.exception.BusinessRuleException;
 import com.dansmultipro.ops.exception.ResourceNotFoundException;
 import com.dansmultipro.ops.model.Payment;
@@ -37,8 +22,21 @@ import com.dansmultipro.ops.repository.ProductTypeRepo;
 import com.dansmultipro.ops.repository.StatusTypeRepo;
 import com.dansmultipro.ops.service.PaymentService;
 import com.dansmultipro.ops.spec.PaymentSpecsification;
-
 import jakarta.transaction.Transactional;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 public class PaymentServiceImpl extends BaseService implements PaymentService {
@@ -91,7 +89,7 @@ public class PaymentServiceImpl extends BaseService implements PaymentService {
     @Override
     @Transactional
     @CacheEvict(value = "payments", allEntries = true)
-    public ApiDeleteResponseDto updateStatus(String id, String status, PaymentStatusUpdateRequestDto request) {
+    public ApiResponseDto updateStatus(String id, String status, PaymentStatusUpdateRequestDto request) {
         String normalizedStatus = status.trim().toUpperCase();
 
         Payment payment = fetchPayment(getUUID(id));
@@ -126,7 +124,7 @@ public class PaymentServiceImpl extends BaseService implements PaymentService {
         }
 
         String message = messageBuilder(RESOURCE_NAME, ResponseConstant.UPDATED.getValue());
-        return new ApiDeleteResponseDto(message);
+        return new ApiResponseDto(message);
     }
 
     @Override
@@ -147,13 +145,15 @@ public class PaymentServiceImpl extends BaseService implements PaymentService {
     @Override
     @Cacheable(
             value = "payments",
-            key = "'getAllByCustomer:' + (#status == null ? 'ALL' : #status.name()) + ':' + #page + ':' + #size + ':' + @authUtil.getLoginId()"
+            key = "'getAllByCustomer:' + (#status == null ? 'ALL' : #status.name()) + ':' + #page + ':' + #size + ':' + #customerId"
     )
-    public PageResponseDto<PaymentCustomerResponseDto> getAllByCustomer(StatusTypeConstant status, int page, int size) {
-        ensureCustomerRole();
+    public PageResponseDto<PaymentCustomerResponseDto> getAllByCustomer(UUID customerId,
+                                                                        StatusTypeConstant status,
+                                                                        int page,
+                                                                        int size) {
         Specification<Payment> spec = Specification.allOf(
                 PaymentSpecsification.byStatus(status),
-                PaymentSpecsification.byCustomerId(authUtil.getLoginId()));
+                PaymentSpecsification.byCustomerId(customerId));
 
         Pageable pageable = buildPageable(page, size);
         Page<Payment> payments = paymentRepo.findAll(spec, pageable);
@@ -182,11 +182,12 @@ public class PaymentServiceImpl extends BaseService implements PaymentService {
 
     private void notifyGatewayOnCreation(Payment payment) {
         resolveGatewayEmail().ifPresent(email -> {
-            EmailNotificationMessageDto message = EmailNotificationMessageDto.paymentMessage(
+            EmailNotificationMessageDto message = new EmailNotificationMessageDto(
                     email,
-                    toPaymentPayload(payment));
+                    toPaymentPayload(payment),
+                    null);
             rabbitTemplate.convertAndSend(
-                    RabbitConfig.PAYMENT_NOTIFICATION_EXCHANGE,
+                    RabbitConfig.NOTIFICATION_EXCHANGE,
                     RabbitConfig.PAYMENT_GATEWAY_NOTIFICATION_ROUTING_KEY,
                     message);
         });
@@ -195,12 +196,13 @@ public class PaymentServiceImpl extends BaseService implements PaymentService {
     private void notifyCustomerOnStatusChange(Payment payment) {
         String email = payment.getCustomer().getEmail();
 
-        EmailNotificationMessageDto message = EmailNotificationMessageDto.paymentMessage(
+        EmailNotificationMessageDto message = new EmailNotificationMessageDto(
                 email,
-                toPaymentPayload(payment));
+                toPaymentPayload(payment),
+                null);
 
         rabbitTemplate.convertAndSend(
-                RabbitConfig.PAYMENT_NOTIFICATION_EXCHANGE,
+                RabbitConfig.NOTIFICATION_EXCHANGE,
                 RabbitConfig.PAYMENT_CUSTOMER_NOTIFICATION_ROUTING_KEY,
                 message);
     }
@@ -212,7 +214,13 @@ public class PaymentServiceImpl extends BaseService implements PaymentService {
     }
 
     private PaymentEmailPayload toPaymentPayload(Payment payment) {
-        return PaymentEmailPayload.from(payment);
+        return new PaymentEmailPayload(
+                payment.getId().toString(),
+                payment.getCustomer().getFullName(),
+                payment.getCustomerNumber(),
+                payment.getStatus().getCode(),
+                payment.getGatewayNote(),
+                payment.getReferenceNo());
     }
 
     private void ensureCustomerRole() {

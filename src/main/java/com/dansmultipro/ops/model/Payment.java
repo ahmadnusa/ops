@@ -1,17 +1,11 @@
 package com.dansmultipro.ops.model;
 
-import java.math.BigDecimal;
-
 import com.dansmultipro.ops.model.master.PaymentType;
 import com.dansmultipro.ops.model.master.ProductType;
 import com.dansmultipro.ops.model.master.StatusType;
+import jakarta.persistence.*;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "payments")

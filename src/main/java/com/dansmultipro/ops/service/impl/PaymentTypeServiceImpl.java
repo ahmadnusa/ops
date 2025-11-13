@@ -6,12 +6,11 @@ import com.dansmultipro.ops.exception.ResourceNotFoundException;
 import com.dansmultipro.ops.model.master.PaymentType;
 import com.dansmultipro.ops.repository.PaymentTypeRepo;
 import com.dansmultipro.ops.service.PaymentTypeService;
-
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.Objects;
+import java.util.UUID;
 
 @Service
 public class PaymentTypeServiceImpl extends BaseService implements PaymentTypeService {

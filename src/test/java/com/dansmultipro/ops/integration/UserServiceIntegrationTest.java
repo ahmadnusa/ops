@@ -10,7 +10,7 @@ import static org.mockito.Mockito.when;
 import com.dansmultipro.ops.config.RabbitConfig;
 import com.dansmultipro.ops.constant.RoleTypeConstant;
 import com.dansmultipro.ops.dto.auth.RegisterRequestDto;
-import com.dansmultipro.ops.dto.common.ApiDeleteResponseDto;
+import com.dansmultipro.ops.dto.common.ApiResponseDto;
 import com.dansmultipro.ops.dto.common.ApiPostResponseDto;
 import com.dansmultipro.ops.dto.notification.EmailNotificationMessageDto;
 import com.dansmultipro.ops.dto.user.ForgotPasswordRequestDto;
@@ -39,8 +39,6 @@ public class UserServiceIntegrationTest extends AbstractServiceIntegrationTest {
 
     @Test
     void registerShouldCreateCustomerWhenUnauthenticated() {
-        when(authUtil.isAuthenticated()).thenReturn(false);
-
         RegisterRequestDto request = new RegisterRequestDto("New User", "new.user@ops.local", "Secret123!");
 
         ApiPostResponseDto response = userService.register(request);
@@ -53,8 +51,6 @@ public class UserServiceIntegrationTest extends AbstractServiceIntegrationTest {
 
     @Test
     void registerShouldThrowWhenEmailAlreadyExists() {
-        when(authUtil.isAuthenticated()).thenReturn(false);
-
         RegisterRequestDto request = new RegisterRequestDto("Duplicate", customerUser.getEmail(), "Password123!");
 
         assertThatThrownBy(() -> userService.register(request))
@@ -85,7 +81,7 @@ public class UserServiceIntegrationTest extends AbstractServiceIntegrationTest {
 
         PasswordUpdateRequestDto request = new PasswordUpdateRequestDto(oldPassword, newPassword);
 
-        ApiDeleteResponseDto response = userService.updatePassword(request);
+        ApiResponseDto response = userService.updatePassword(request);
 
         assertThat(response.message()).isEqualTo("User has been Updated successfully.");
 
@@ -95,9 +91,6 @@ public class UserServiceIntegrationTest extends AbstractServiceIntegrationTest {
 
     @Test
     void updatePasswordShouldThrowWhenOldPasswordInvalid() {
-        customerUser.setPassword(passwordEncoder.encode("Correct123!"));
-        userRepo.saveAndFlush(customerUser);
-
         when(authUtil.getLoginId()).thenReturn(customerUser.getId());
 
         PasswordUpdateRequestDto request = new PasswordUpdateRequestDto("Wrong123!", "WillNotUse!");
@@ -111,14 +104,14 @@ public class UserServiceIntegrationTest extends AbstractServiceIntegrationTest {
     void forgotPasswordShouldResetPasswordAndPublishNotification() {
         ForgotPasswordRequestDto request = new ForgotPasswordRequestDto(customerUser.getEmail());
 
-        ApiDeleteResponseDto response = userService.forgotPassword(request);
+        ApiResponseDto response = userService.forgotPassword(request);
 
         assertThat(response.message()).isEqualTo("User password has been Updated successfully.");
 
         ArgumentCaptor<EmailNotificationMessageDto> messageCaptor = ArgumentCaptor.forClass(
                 EmailNotificationMessageDto.class);
         verify(rabbitTemplate).convertAndSend(
-                eq(RabbitConfig.PAYMENT_NOTIFICATION_EXCHANGE),
+                eq(RabbitConfig.NOTIFICATION_EXCHANGE),
                 eq(RabbitConfig.FORGOT_PASSWORD_NOTIFICATION_ROUTING_KEY),
                 messageCaptor.capture());
 
@@ -155,7 +148,7 @@ public class UserServiceIntegrationTest extends AbstractServiceIntegrationTest {
     void approveCustomerShouldActivateInactiveUsers() {
         User pendingUser = createUser("Pending User", "pending@ops.local", customerRole, false, "password");
 
-        ApiDeleteResponseDto response = userService.approveCustomer(List.of(pendingUser.getId().toString()));
+        ApiResponseDto response = userService.approveCustomer(List.of(pendingUser.getId().toString()));
 
         assertThat(response.message()).isEqualTo("User has been Updated successfully.");
 

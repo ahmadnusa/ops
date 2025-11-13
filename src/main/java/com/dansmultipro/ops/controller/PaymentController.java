@@ -1,37 +1,29 @@
 package com.dansmultipro.ops.controller;
 
+import com.dansmultipro.ops.constant.StatusTypeConstant;
+import com.dansmultipro.ops.dto.common.ApiPostResponseDto;
+import com.dansmultipro.ops.dto.common.ApiResponseDto;
+import com.dansmultipro.ops.dto.payment.*;
+import com.dansmultipro.ops.service.PaymentService;
+import com.dansmultipro.ops.util.AuthUtil;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.dansmultipro.ops.constant.StatusTypeConstant;
-import com.dansmultipro.ops.dto.common.ApiDeleteResponseDto;
-import com.dansmultipro.ops.dto.common.ApiPostResponseDto;
-import com.dansmultipro.ops.dto.payment.PageResponseDto;
-import com.dansmultipro.ops.dto.payment.PaymentCreateRequestDto;
-import com.dansmultipro.ops.dto.payment.PaymentCustomerResponseDto;
-import com.dansmultipro.ops.dto.payment.PaymentResponseDto;
-import com.dansmultipro.ops.dto.payment.PaymentStatusUpdateRequestDto;
-import com.dansmultipro.ops.service.PaymentService;
-
-import jakarta.validation.Valid;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/payments")
 public class PaymentController {
 
     private final PaymentService paymentService;
+    private final AuthUtil authUtil;
 
-    public PaymentController(PaymentService paymentService) {
+    public PaymentController(PaymentService paymentService, AuthUtil authUtil) {
         this.paymentService = paymentService;
+        this.authUtil = authUtil;
     }
 
     @PostMapping
@@ -43,11 +35,11 @@ public class PaymentController {
 
     @PutMapping("/{id}/{status}")
     @PreAuthorize("hasAnyRole('CUSTOMER','GATEWAY')")
-    public ResponseEntity<ApiDeleteResponseDto> updateStatus(
+    public ResponseEntity<ApiResponseDto> updateStatus(
             @PathVariable String id,
             @PathVariable String status,
             @Valid @RequestBody(required = false) PaymentStatusUpdateRequestDto request) {
-        ApiDeleteResponseDto response = paymentService.updateStatus(id, status, request);
+        ApiResponseDto response = paymentService.updateStatus(id, status, request);
         return ResponseEntity.ok(response);
     }
 
@@ -67,7 +59,9 @@ public class PaymentController {
             @RequestParam(required = false) StatusTypeConstant status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        PageResponseDto<PaymentCustomerResponseDto> response = paymentService.getAllByCustomer(status, page, size);
+        UUID customerId = authUtil.getLoginId();
+        PageResponseDto<PaymentCustomerResponseDto> response =
+                paymentService.getAllByCustomer(customerId, status, page, size);
         return ResponseEntity.ok(response);
     }
 

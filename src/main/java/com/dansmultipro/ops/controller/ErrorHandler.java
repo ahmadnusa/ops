@@ -1,7 +1,8 @@
 package com.dansmultipro.ops.controller;
 
-import java.util.List;
-
+import com.dansmultipro.ops.dto.common.ErrorResDto;
+import com.dansmultipro.ops.exception.BusinessRuleException;
+import com.dansmultipro.ops.exception.ResourceNotFoundException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -13,9 +14,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import com.dansmultipro.ops.dto.common.ErrorResDto;
-import com.dansmultipro.ops.exception.BusinessRuleException;
-import com.dansmultipro.ops.exception.ResourceNotFoundException;
+import java.util.List;
 
 @RestControllerAdvice
 public class ErrorHandler {

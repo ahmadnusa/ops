@@ -32,7 +32,7 @@ public class AuthServiceIntegrationTest extends AbstractServiceIntegrationTest {
     @Test
     void loginShouldFailWhenUserInactive() {
         User inactiveUser = createUser("Inactive", "inactive@ops.local", customerRole, false,
-                "$2b$10$scc3630FpjylS2L5Sko8Q.aL2LU2ZvELXmJyIhYY01/mV8e5ueCSy");
+                passwordEncoder.encode("password"));
         LoginRequestDto request = new LoginRequestDto(inactiveUser.getEmail(), "password");
 
         assertThatThrownBy(() -> authService.login(request))

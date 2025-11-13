@@ -1,5 +1,8 @@
 package com.dansmultipro.ops.config;
 
+import com.dansmultipro.ops.filter.RateLimitFilter;
+import com.dansmultipro.ops.filter.TokenFilter;
+import com.dansmultipro.ops.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,9 +19,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import com.dansmultipro.ops.filter.TokenFilter;
-import com.dansmultipro.ops.service.UserService;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
@@ -44,6 +44,8 @@ public class SecurityConfig {
         ArrayList<RequestMatcher> matchers = new ArrayList<>();
         matchers.add(PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/users" +
                 "/register"));
+        matchers.add(PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/users" +
+                "/forgot-password"));
         matchers.add(PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/auth/login"));
         matchers.add(PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, "/v3/api-docs/**"));
         matchers.add(PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, "/swagger-ui/**"));
@@ -69,13 +71,15 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             TokenFilter tokenFilter,
+            RateLimitFilter rateLimitFilter,
             AuthenticationProvider authenticationProvider) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(AbstractHttpConfigurer::disable)
                 .sessionManagement(config -> config.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
-                .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(rateLimitFilter, TokenFilter.class);
         return http.build();
     }
 }

@@ -1,7 +1,5 @@
 package com.dansmultipro.ops.config;
 
-import java.time.Duration;
-
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -14,24 +12,31 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+import java.time.Duration;
+
 @Configuration
 @EnableCaching
 @Profile("!test")
 public class RedisConfig {
 
-        @Bean
-        public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
-                GenericJackson2JsonRedisSerializer json = new GenericJackson2JsonRedisSerializer();
+    @Bean
+    public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
+        GenericJackson2JsonRedisSerializer json = new GenericJackson2JsonRedisSerializer();
 
-                RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
-                                .disableCachingNullValues()
-                                .entryTtl(Duration.ofMinutes(10))
-                                .serializeKeysWith(RedisSerializationContext.SerializationPair
-                                                .fromSerializer(new StringRedisSerializer()))
-                                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(json));
+        RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
+                .disableCachingNullValues()
+                .entryTtl(Duration.ofMinutes(10))
+                .serializeKeysWith(RedisSerializationContext.SerializationPair
+                        .fromSerializer(new StringRedisSerializer()))
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(json));
 
-                return RedisCacheManager.builder(connectionFactory)
-                                .cacheDefaults(config)
-                                .build();
-        }
+        return RedisCacheManager.builder(connectionFactory)
+                .cacheDefaults(config)
+                .build();
+    }
+
+//    @Bean
+//    public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory connectionFactory) {
+//        return new StringRedisTemplate(connectionFactory);
+//    }
 }
