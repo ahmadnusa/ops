@@ -7,6 +7,7 @@ import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -77,6 +78,12 @@ public class ErrorHandler {
     public ResponseEntity<?> handleAccessDeniedException(AccessDeniedException ex) {
         ErrorResDto<String> errorRes = new ErrorResDto<>("Access Denied: You do not have permission to access this resource");
         return new ResponseEntity<>(errorRes, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<?> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+        ErrorResDto<String> errorRes = new ErrorResDto<>("Invalid JSON format");
+        return new ResponseEntity<>(errorRes, HttpStatus.BAD_REQUEST);
     }
 
     private String extractDetail(String msg) {
