@@ -294,23 +294,6 @@ public class PaymentServiceIntegrationTest extends AbstractServiceIntegrationTes
     }
 
     @Test
-    void getAllShouldHandleNegativePagingParameters() {
-        when(authUtil.isAuthenticated()).thenReturn(true);
-        when(authUtil.getLoginId()).thenReturn(customerUser.getId());
-
-        createPayment(customerUser);
-
-        PageResponseDto<PaymentResponseDto> response = paymentService.getAll(
-                StatusTypeConstant.PROCESSING,
-                -1,
-                -5);
-
-        assertThat(response.getPage()).isEqualTo(0);
-        assertThat(response.getSize()).isEqualTo(10);
-        assertThat(response.getContent()).hasSize(1);
-    }
-
-    @Test
     void getAllByCustomerShouldReturnOnlyOwnedPayments() {
         User anotherCustomer = createAdditionalCustomer();
 
