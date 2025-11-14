@@ -289,9 +289,13 @@ public class PaymentServiceImpl extends BaseService implements PaymentService {
     }
 
     private Pageable buildPageable(int page, int size) {
-        int safePage = Math.max(page, 0);
-        int safeSize = size <= 0 ? 10 : size;
-        return PageRequest.of(safePage, safeSize);
+        if (page < 0) {
+            throw new BusinessRuleException(messageBuilder("Page", "must be greater than or equal to 0."));
+        }
+        if (size <= 0) {
+            throw new BusinessRuleException(messageBuilder("Size", "must be greater than 0."));
+        }
+        return PageRequest.of(page, size);
     }
 
     private PaymentResponseDto toListDto(Payment payment) {

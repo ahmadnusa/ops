@@ -47,8 +47,8 @@ public class PaymentController {
     @PreAuthorize("hasAnyRole('SA','GATEWAY')")
     public ResponseEntity<PageResponseDto<PaymentResponseDto>> getAll(
             @RequestParam(required = false) StatusTypeConstant status,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam int page,
+            @RequestParam int size) {
         PageResponseDto<PaymentResponseDto> response = paymentService.getAll(status, page, size);
         return ResponseEntity.ok(response);
     }
@@ -57,8 +57,8 @@ public class PaymentController {
     @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<PageResponseDto<PaymentCustomerResponseDto>> getAllByCustomer(
             @RequestParam(required = false) StatusTypeConstant status,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam int page,
+            @RequestParam int size) {
         UUID customerId = authUtil.getLoginId();
         PageResponseDto<PaymentCustomerResponseDto> response =
                 paymentService.getAllByCustomer(customerId, status, page, size);

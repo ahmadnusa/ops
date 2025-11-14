@@ -34,9 +34,4 @@ public class RedisConfig {
                 .cacheDefaults(config)
                 .build();
     }
-
-//    @Bean
-//    public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory connectionFactory) {
-//        return new StringRedisTemplate(connectionFactory);
-//    }
 }

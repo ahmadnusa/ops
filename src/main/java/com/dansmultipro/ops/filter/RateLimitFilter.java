@@ -52,10 +52,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
     }
 
     private boolean isWhitelisted(String uri) {
-        return uri.startsWith("/actuator")
-                || uri.startsWith("/docs")
-                || uri.startsWith("/swagger")
-                || uri.equals("/");
+        return uri.startsWith("/swagger");
     }
 
     private String buildKey(HttpServletRequest req) {
